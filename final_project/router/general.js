@@ -5,39 +5,49 @@ let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
 
-public_users.post("/register", (req,res) => {
-    const username = req.body.username;
+public_users.post("/register", (req, res) => {
+    const username = req.body.username.replaceAll(" ", "");
     const password = req.body.password;
     // Check if username or password is missing
     if (!username || !password) {
         return res.status(404).json({ message: "Error creating user. Make sure you provide a username and password." });
     }
 
-    if (users.username == undefined) {
-        users[username] = password;
-    } else {
-        return res.status(404).json({ message: "Error creating user. Username already exists." });
+    let exists = false; // check if user already exists
+    for (let i=0; i<users.length; i++) {
+        if (users[i][username]) {
+            exists = true;
+            break;
+        }
+    };
+
+    if (!exists) {
+        const user = {[username] : password}
+        users.push(user);
+        return res.status(200).send("User session successfully created");
     }
+    return res.status(404).json({ message: "Error creating user. Username already exists." });    
+});
 
-
-    return res.status(200).send("User session successfully created");
+public_users.get('/users', function (req, res) {
+    return res.status(200).json(users);
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
+public_users.get('/', function (req, res) {
     return res.status(200).json(books);
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-  return res.status(200).json(books[req.params.isbn]);
- });
-  
+public_users.get('/isbn/:isbn', function (req, res) {
+    return res.status(200).json(books[req.params.isbn]);
+});
+
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
+public_users.get('/author/:author', function (req, res) {
     let book = {}
     Object.keys(books).forEach(key => {
-        if (books[key].author == req.params.author){
+        if (books[key].author == req.params.author) {
             book = books[key];
         }
     })
@@ -45,14 +55,14 @@ public_users.get('/author/:author',function (req, res) {
     if (Object.keys(book).length > 0) {
         return res.status(200).json(book)
     }
-    return res.status(400).json({message: "Author not found"});
+    return res.status(400).json({ message: "Author not found" });
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  let book = {}
+public_users.get('/title/:title', function (req, res) {
+    let book = {}
     Object.keys(books).forEach(key => {
-        if (books[key].title == req.params.title){
+        if (books[key].title == req.params.title) {
             book = books[key];
         }
     })
@@ -60,11 +70,11 @@ public_users.get('/title/:title',function (req, res) {
     if (Object.keys(book).length > 0) {
         return res.status(200).json(book)
     }
-    return res.status(400).json({message: "Author not found"});
+    return res.status(400).json({ message: "Author not found" });
 });
 
 //  Get book review
-public_users.get('/review/:isbn',function (req, res) {
+public_users.get('/review/:isbn', function (req, res) {
     return res.status(200).json(books[req.params.isbn]['reviews']);
 });
 

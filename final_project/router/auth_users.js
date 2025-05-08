@@ -5,24 +5,60 @@ const regd_users = express.Router();
 
 let users = [];
 
-const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
+const isValid = (username) => {
+    if(users.hasOwnProperty( username )) {
+        return true;
+    };
+
+    return false;
 }
 
-const authenticatedUser = (username,password)=>{ //returns boolean
-//write code to check if username and password match the one we have in records.
+const authenticatedUser = (username, password) => {
+    for (let i = 0; i<users.length; i++) {
+        // return users[i][username]
+        if (users[i].hasOwnProperty(username) && users[i][username] === password) {
+            return true
+        }
+    }
+
+    return false;
 }
 
 //only registered users can login
-regd_users.post("/login", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+regd_users.post("/login", (req, res) => {
+    const username = req.body.username.replaceAll(" ", "");
+    const password = req.body.password;
+
+    if (authenticatedUser(username, password)) {
+        // Generate JWT access token
+        let accessToken = jwt.sign({
+            data: password
+        }, 'access', { expiresIn: 60 * 600 });
+        // Store access token and username in session
+        req.session.authorization = {
+            accessToken, username
+        }
+        return res.status(200).json({ message: "User successfully logged in" });
+    }
+    return res.status(404).json({ message: "Unable to authenticate user" });
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const review = req.query.review;
+    if (!review) {
+        return res.status(404).send("Please enter a review");
+    }
+    if (!req.params.isbn) {
+        return res.status(404).send("ISBN required");
+    }
+    const book = books[req.params.isbn]
+    if (!book) {
+        return res.status(404).send("Invalid ISBN");
+    }
+    books[req.params.isbn].reviews[req.session.authorization.username] = review
+
+    return res.status(200).json(books[req.params.isbn].reviews);
 });
 
 module.exports.authenticated = regd_users;

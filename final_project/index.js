@@ -18,17 +18,19 @@ app.use("/customer/auth/*", function auth(req,res,next){
         return res.status(404).json({ message: "Error creating session. Make sure you provide a username and password." });
     }
 
-    // Generate JWT access token
-    let accessToken = jwt.sign({
-        data: password
-    }, 'access', { expiresIn: 60 * 60 });
-    // Store access token and username in session
-    req.session.authorization = {
-        accessToken, username
+    if (req.session.authorization) {
+        // Generate JWT access token
+        let accessToken = jwt.sign({
+            data: password
+        }, 'access', { expiresIn: 60 * 600 });
+        // Store access token and username in session
+        req.session.authorization = {
+            accessToken, username
+        }
     }
-    return res.status(200).send("User session successfully created");
+    next()
 });
- 
+
 const PORT =5000;
 
 app.use("/customer", customer_routes);
