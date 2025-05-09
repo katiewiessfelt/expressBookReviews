@@ -14,7 +14,7 @@ public_users.post("/register", (req, res) => {
     }
 
     let exists = false; // check if user already exists
-    for (let i=0; i<users.length; i++) {
+    for (let i = 0; i < users.length; i++) {
         if (users[i][username]) {
             exists = true;
             break;
@@ -22,11 +22,11 @@ public_users.post("/register", (req, res) => {
     };
 
     if (!exists) {
-        const user = {[username] : password}
+        const user = { [username]: password }
         users.push(user);
         return res.status(200).send("User session successfully created");
     }
-    return res.status(404).json({ message: "Error creating user. Username already exists." });    
+    return res.status(404).json({ message: "Error creating user. Username already exists." });
 });
 
 public_users.get('/users', function (req, res) {
@@ -35,42 +35,70 @@ public_users.get('/users', function (req, res) {
 
 // Get the book list available in the shop
 public_users.get('/', function (req, res) {
-    return res.status(200).json(books);
+    let getBooks = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(books)
+        }, 6000)
+    })
+    getBooks.then((data) => {
+        return res.status(200).json(data)
+    })
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', function (req, res) {
-    return res.status(200).json(books[req.params.isbn]);
+    let getBook = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(books[req.params.isbn])
+        }, 6000)
+    })
+    getBook.then((data) => {
+        return res.status(200).json(data)
+    })
 });
 
 // Get book details based on author
 public_users.get('/author/:author', function (req, res) {
-    let book = {}
-    Object.keys(books).forEach(key => {
-        if (books[key].author == req.params.author) {
-            book = books[key];
-        }
+    let getBook = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            let book = {}
+            Object.keys(books).forEach(key => {
+                if (books[key].author == req.params.author) {
+                    book = books[key];
+                }
+            })
+            if (Object.keys(book).length > 0) {
+                resolve(book)
+            } else {
+                reject("Author not found")
+            }
+        }, 6000)
     })
-
-    if (Object.keys(book).length > 0) {
-        return res.status(200).json(book)
-    }
-    return res.status(400).json({ message: "Author not found" });
+    getBook.then((data) => {
+        return res.status(200).json(data)
+    })
 });
 
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
-    let book = {}
-    Object.keys(books).forEach(key => {
-        if (books[key].title == req.params.title) {
-            book = books[key];
-        }
+    let getBook = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            let book = {}
+            Object.keys(books).forEach(key => {
+                if (books[key].title == req.params.title) {
+                    book = books[key];
+                }
+            })
+            if (Object.keys(book).length > 0) {
+                resolve(book)
+            } else {
+                reject("Title not found")
+            }
+        }, 6000)
     })
-
-    if (Object.keys(book).length > 0) {
-        return res.status(200).json(book)
-    }
-    return res.status(400).json({ message: "Author not found" });
+    getBook.then((data) => {
+        return res.status(200).json(data)
+    })
 });
 
 //  Get book review
